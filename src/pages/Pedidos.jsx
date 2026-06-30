@@ -1,78 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import apiService from '../services/api';
 
-const restaurantes = [
-  {
-    id: 1,
-    nome: "La Bella Cucina",
-    categoria: "Italiana",
-    iconeCategoria: "🍝",
-    corTextoCategoria: "#dc2626",
-    status: "Aberto",
-    classeStatus: "status-aberto",
-    endereco: "Rua Augusta, 1200 - Consolação, São Paulo - SP",
-    telefone: "(11) 98765-4321",
-    qtdPratos: 17,
-    textoBotao: "Ver cardápio",
-    classeBotao: "btn-ver-cardapio btn-ver-cardapio-vermelho",
-    imagem: "https://images.unsplash.com/photo-1498579150354-977475b7e2b3?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 2,
-    nome: "Sushi Bar Osaka",
-    categoria: "Japonês",
-    iconeCategoria: "🍣",
-    corTextoCategoria: "#4f46e5",
-    status: "Aberto",
-    classeStatus: "status-aberto",
-    endereco: "Av. Liberdade, 450 - Liberdade, São Paulo - SP",
-    telefone: "(11) 91234-5678",
-    qtdPratos: 1,
-    textoBotao: "Ver cardápio",
-    classeBotao: "btn-ver-cardapio btn-ver-cardapio-indigo",
-    imagem: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 3,
-    nome: "Burger House",
-    categoria: "Hamburgueria",
-    iconeCategoria: "🍔",
-    corTextoCategoria: "#f97316",
-    status: "Fechado",
-    classeStatus: "status-fechado",
-    endereco: "Rua Oscar Freire, 350 - Jardins, São Paulo - SP",
-    telefone: "(11) 99988-7766",
-    qtdPratos: 1,
-    textoBotao: "Indisponível",
-    classeBotao: "btn-ver-cardapio btn-indisponivel",
-    imagem: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
-  }
-];
-
-export default function MenuDigital() {
-
-  const [user, setUser] = useState({nome: "teste"})
-  const [restaurantes, setRestaurantes] = useState([])
-  // pegar os restaurantes nessa variavel e implementar os cards com os dados
+export default function PedidosUsuario() {
+  const [user, setUser] = useState({ nome: "teste" });
+  const [pedidos, setPedidos] = useState([]);
 
   useEffect(() => {
-      const getRestaurantes = async () => {
-        try{
-          const data = await apiService.getRestaurantes();
-          setRestaurantes(data.data)
-          console.log(restaurantes)
-        }
-        catch (error){
-          console.error('Error fetching data:', error);
-        }
+    const getPedidos = async () => {
+      try {
+        // Altere para a rota correta do seu apiService correspondente aos pedidos
+        //const data = await apiService.getPedidos();
+        //setPedidos(data.data);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
       }
-      getRestaurantes();
+    };
+    //getPedidos();
   }, []);
-
 
   return (
     <div className="menu-container">
-      {/* Estilos CSS Injetados DIRETAMENTE no JSX */}
+      {/* Estilos CSS Injetados DIRETAMENTE no JSX (Mesmo Design) */}
       <style>{`
         .menu-container {
           min-height: 100vh;
@@ -219,7 +167,7 @@ export default function MenuDigital() {
           gap: 1.5rem;
         }
 
-        /* Cards */
+        /* Cards de Pedidos */
         .restaurant-card {
           background-color: white;
           border-radius: 1rem;
@@ -255,8 +203,10 @@ export default function MenuDigital() {
           gap: 0.35rem;
         }
 
-        .status-aberto { background-color: #22c55e; color: white; }
-        .status-fechado { background-color: #f87171; color: white; }
+        /* Variações de Cores para o Status do Pedido */
+        .status-preparo { background-color: #f59e0b; color: white; }
+        .status-entregue { background-color: #22c55e; color: white; }
+        .status-cancelado { background-color: #ef4444; color: white; }
         
         .status-dot {
           width: 6px;
@@ -291,7 +241,14 @@ export default function MenuDigital() {
           font-size: 1.25rem;
           font-weight: 700;
           color: #111827;
-          margin: 0 0 0.75rem 0;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .order-number {
+          font-size: 0.85rem;
+          color: #9ca3af;
+          font-weight: 600;
+          margin-bottom: 0.75rem;
         }
 
         .info-item {
@@ -304,6 +261,16 @@ export default function MenuDigital() {
           line-height: 1.4;
         }
 
+        .items-list {
+          font-size: 0.875rem;
+          color: #4b5563;
+          background-color: #f9fafb;
+          padding: 0.75rem;
+          border-radius: 0.5rem;
+          margin-bottom: 1.5rem;
+          border-left: 3px solid #dc2626;
+        }
+
         .card-footer-layout {
           margin-top: auto;
           padding-top: 1rem;
@@ -314,9 +281,9 @@ export default function MenuDigital() {
         }
 
         .dishes-label {
-          font-size: 0.875rem;
-          color: #9ca3af;
-          font-weight: 500;
+          font-size: 1rem;
+          color: #111827;
+          font-weight: 700;
         }
 
         .btn-ver-cardapio {
@@ -334,11 +301,6 @@ export default function MenuDigital() {
 
         .btn-ver-cardapio-vermelho { background-color: #dc2626; color: white; }
         .btn-ver-cardapio-vermelho:hover { background-color: #b91c1c; }
-        
-        .btn-ver-cardapio-indigo { background-color: #6366f1; color: white; }
-        .btn-ver-cardapio-indigo:hover { background-color: #4f46e5; }
-        
-        .btn-indisponivel { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
       `}</style>
 
       {/* Navbar */}
@@ -354,7 +316,6 @@ export default function MenuDigital() {
           MenuDigital
         </div>
         <div className="user-nav">
-          {/* <span>Admin</span> */}
           <div className="user-profile">
             <div className="avatar-circle">JS</div>
             <span>{user.nome}</span>
@@ -369,63 +330,68 @@ export default function MenuDigital() {
       <section className="hero-banner">
         <div className="hero-body">
           <div className="hero-badge">
-            <span>👾</span> Cardápio Digital
+            <span>📦</span> Histórico de Pedidos
           </div>
           <h1 className="hero-title">
-            Escolha seu <br />
-            <span>restaurante</span> favorito
+            Acompanhe seus <br />
+            <span>pedidos</span> recentes
           </h1>
-          <p className="hero-text">Navegue pelo cardápio completo de cada restaurante e descubra pratos incríveis.</p>
+          <p className="hero-text">Verifique o status de preparo e entrega das suas refeições em tempo real.</p>
         </div>
       </section>
 
-      {/* Listagem */}
+      {/* Listagem de Pedidos */}
       <main className="content-section">
         <div className="content-title-block">
-          <h2>Restaurantes disponíveis</h2>
-          <p>3 estabelecimentos</p>
+          <h2>Seus Pedidos</h2>
+          <p>{pedidos.length} {pedidos.length === 1 ? 'pedido localizado' : 'pedidos localizados'}</p>
         </div>
 
         <div className="grid-layout">
-          {restaurantes.map((restaurante) => (
-            <div key={restaurante.id} className="restaurant-card">
+          {pedidos.map((pedido) => (
+            <div key={pedido.id} className="restaurant-card">
               
               <div className="card-media">
-                <img src={restaurante.imagem} alt={restaurante.nome} />
-                <div className={`status-tag ${restaurante.classeStatus}`}>
+                <img src={pedido.imagem || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80"} alt={pedido.nomeRestaurante} />
+                
+                {/* Status customizado dinamicamente vindo da API */}
+                <div className={`status-tag ${
+                  pedido.status === 'Em preparo' ? 'status-preparo' : 
+                  pedido.status === 'Entregue' ? 'status-entregue' : 'status-cancelado'
+                }`}>
                   <div className="status-dot"></div>
-                  {restaurante.status}
+                  {pedido.status}
                 </div>
-                <div className="category-tag" style={{ color: restaurante.corTextoCategoria }}>
-                  <span>{restaurante.iconeCategoria}</span>
-                  {restaurante.categoria}
+
+                <div className="category-tag" style={{ color: pedido.corTextoCategoria || '#dc2626' }}>
+                  <span>{pedido.iconeCategoria || '🍽️'}</span>
+                  {pedido.categoria}
                 </div>
               </div>
 
               <div className="card-body">
-                <h3>{restaurante.nome}</h3>
+                <h3>{pedido.nomeRestaurante}</h3>
+                <div className="order-number">Pedido #{pedido.id}</div>
                 
                 <div className="info-item">
-                  <span style={{ fontSize: '1rem' }}>📍</span>
-                  <span>{restaurante.endereco}</span>
+                  <span style={{ fontSize: '1rem' }}>📅</span>
+                  <span>{pedido.dataPedido}</span>
                 </div>
-                
-                <div className="info-item" style={{ marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '1rem' }}>📞</span>
-                  <span>{restaurante.telefone}</span>
+
+                {/* Resumo dos Itens Pedidos */}
+                <div className="items-list">
+                  <strong>Itens:</strong> {pedido.resumoItens}
                 </div>
 
                 <div className="card-footer-layout">
                   <span className="dishes-label">
-                    {restaurante.qtdPratos} {restaurante.qtdPratos === 1 ? 'prato' : 'pratos'} no cardápio
+                    Total: R$ {pedido.valorTotal?.toFixed(2)}
                   </span>
-                  <button className={restaurante.classeBotao}>
-                    {restaurante.textoBotao}
-                    {restaurante.status === "Aberto" && (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="m9 18 6-6-6-6"/>
-                      </svg>
-                    )}
+                  <button className="btn-ver-cardapio btn-ver-cardapio-vermelho">
+                    Acompanhar
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="m9 18 6-6-6-6"/>
+                    </svg>
                   </button>
                 </div>
               </div>
