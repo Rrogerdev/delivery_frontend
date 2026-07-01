@@ -1,16 +1,14 @@
 version: '3.8'
 
 services:
-  biblioteca-front:
+  delivery-front:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: delivery-front
     ports:
-      - "9536:9536"
-    env_file:
-      - .env
+      - "9526:9526"
+
     environment:
-      - NODE_ENV=production
-      - PORT=9536
+      - PORT=9526
     restart: always
