@@ -8,7 +8,8 @@ export default function PedidosUsuario() {
   useEffect(() => {
     const getPedidos = async () => {
       try {
-        const data = await apiService.getPedidos();
+        const id = localStorage.getItem("user_id") || 1;
+        const data = await apiService.getPedidosByUsuario(id);
         console.log("dados da api: ", data.data)
         setPedidos(data.data);
       } catch (error) {
@@ -412,7 +413,7 @@ export default function PedidosUsuario() {
                       Total: R$ {pedido.pedido_valor_total?.toFixed(2).replace('.', ',')}
                     </span>
                     <button className="btn-ver-cardapio btn-ver-cardapio-vermelho">
-                      Acompanhar
+                      Pagar
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="m9 18 6-6-6-6"/>
                       </svg>

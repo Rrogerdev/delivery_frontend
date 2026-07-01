@@ -5,6 +5,7 @@ import apiService from '../services/api';
 export default function MenuDigital() {
   const [user, setUser] = useState({ nome: "teste" });
   const [restaurantes, setRestaurantes] = useState([]);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // ESTADO PARA CONTROLAR O MENU DO PERFIL
   const navigate = useNavigate(); // INICIALIZADO O NAVIGATOR
 
   useEffect(() => {
@@ -42,6 +43,8 @@ export default function MenuDigital() {
           padding: 1rem 2rem;
           background-color: #ffffff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          position: relative; /* Adicionado para posicionamento do menu */
+          z-index: 10;
         }
 
         .logo-box {
@@ -70,6 +73,7 @@ export default function MenuDigital() {
           gap: 1.5rem;
           font-size: 0.875rem;
           color: #4b5563;
+          position: relative; /* Garante que o menu alinhe com o container do perfil */
         }
 
         .user-profile {
@@ -77,6 +81,7 @@ export default function MenuDigital() {
           align-items: center;
           gap: 0.5rem;
           cursor: pointer;
+          user-select: none;
         }
 
         .avatar-circle {
@@ -89,6 +94,47 @@ export default function MenuDigital() {
           align-items: center;
           justify-content: center;
           font-weight: 600;
+        }
+
+        /* Menu Dropdown do Usuário */
+        .profile-dropdown {
+          position: absolute;
+          top: 110%;
+          right: 0;
+          background-color: white;
+          min-width: 160px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          border-radius: 0.5rem;
+          border: 1px solid #e5e7eb;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+          padding: 0.75rem 1rem;
+          color: #374151;
+          text-align: left;
+          background: none;
+          border: none;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: background-color 0.2s;
+        }
+
+        .dropdown-item:hover {
+          background-color: #f3f4f6;
+          color: #dc2626;
         }
 
         /* Hero */
@@ -310,13 +356,39 @@ export default function MenuDigital() {
           MenuDigital
         </div>
         <div className="user-nav">
-          <div className="user-profile">
+          {/* Adicionado onClick para abrir/fechar o menu */}
+          <div className="user-profile" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <div className="avatar-circle">JS</div>
             <span>{user.nome}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            {/* O ícone rotaciona levemente dependendo do estado do menu */}
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2.5"
+              style={{ transform: isMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+            >
               <path d="m6 9 6 6 6-6"/>
             </svg>
           </div>
+
+          {/* MENU DROPDOWN CONDICIONAL */}
+          {isMenuOpen && (
+            <div className="profile-dropdown">
+              <button 
+                className="dropdown-item" 
+                onClick={() => {
+                  setIsMenuOpen(false); // Fecha o menu ao clicar
+                  navigate('/pedidos'); // Redireciona
+                }}
+              >
+                <span>📦</span> Meus Pedidos
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -386,7 +458,6 @@ export default function MenuDigital() {
                     <span className="dishes-label">
                       Visualizar
                     </span>
-                    {/* IMPLEMENTADA A FUNÇÃO DE REDIRECIONAMENTO COM O ID */}
                     <button 
                       className={classeBotao}
                       onClick={() => isAberto && navigate(`/cardapio/${restaurante.id}`)}

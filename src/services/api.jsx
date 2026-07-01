@@ -7,19 +7,19 @@ const servicos = {
     pagamento: "9524",
     usuario: "9525"
   };
-const baseURL = "http://10.136.38.50"
-const createService = (port) =>{
+const baseURL = "http://academico3.rj.senac.br/20261prj5/delivery"
+const createService = (serv) =>{
   
   return axios.create({
-    baseURL: `${baseURL}:${port}`,
+    baseURL: `${baseURL}/${serv}`,
     timeout: 5000,
     headers: { "Content-Type": "application/json" }
   });
 }
-export const restauranteApi = createService(9522);
-export const pedidoApi = createService(9523);
-export const pagamentoApi = createService(9524);
-export const usuarioApi = createService(9523);
+export const restauranteApi = createService("restaurante");
+export const pedidoApi = createService("pedido");
+export const pagamentoApi = createService("pagamento");
+export const usuarioApi = createService("usuario");
 
 const apiService = {
     getUsuarios: async () => {
@@ -32,6 +32,10 @@ const apiService = {
 
     getPedidos: async () =>{
       return await pedidoApi.get('/pedidos');
+    },
+
+    getPedidosByUsuario: async (id) =>{
+      return await pedidoApi.get(`/pedidos/usuario/${id}`);
     },
 
     getCardapioByRestaurante: async (id) =>{
