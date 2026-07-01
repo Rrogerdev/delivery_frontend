@@ -3,19 +3,17 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-# Copia manifests de dependências
+# Copia os arquivos de configuração das dependências primeiro
+# para aproveitar o cache das camadas do Docker
 COPY package.json package-lock.json ./
 
 # Instala todas as dependências (dev + prod para o build)
 RUN npm install
 
-# Copia o restante do código
+# Copia o restante do código fonte
 COPY . .
 
-# Garante que o .env está disponível para o Vite (VITE_* são embeddados no build)
-# O COPY . . acima já inclui o .env, mas deixamos explícito aqui.
-
-# Gera o bundle estático em dist/public
+# Gera o bundle estático na pasta /app/dist
 RUN npm run build
 
 # ── Estágio 2: Servidor de produção ───────────────────────────────────────────
@@ -23,15 +21,17 @@ FROM node:22-slim AS runner
 
 WORKDIR /app
 
-# Copia apenas o necessário para rodar em produção
-COPY package.json package-lock.json ./
-RUN npm install --omit=dev
+# Instala o servidor estático 'serve' globalmente
+# Isso garante que o container seja rápido e não precise baixar nada ao iniciar
+RUN npm install -g serve
 
-# Copia o bundle do React e o servidor Express compilado
+# Copia apenas a pasta 'dist' gerada no primeiro estágio
 COPY --from=builder /app/dist ./dist
 
-# Copia .env.production para que o Express leia VITE_URL_* em runtime (fallback dos proxies)
+# Expõe a porta que o seu Jenkins está configurado para usar
 EXPOSE 9526
 
-
-CMD ["node", "dist/index.js"]
+# Comando para rodar o servidor servindo a pasta 'dist'
+# -s: Modo Single Page Application (redireciona tudo para index.html, essencial para React Router)
+# -l: Define a porta de escuta
+CMD ["serve", "-s", "dist", "-l", "9526"]
