@@ -31,10 +31,7 @@ RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
 
 # Copia .env.production para que o Express leia VITE_URL_* em runtime (fallback dos proxies)
-COPY .env.production .env
+EXPOSE 9526
 
-EXPOSE 9536
-
-ENV NODE_ENV=production
 
 CMD ["node", "dist/index.js"]
