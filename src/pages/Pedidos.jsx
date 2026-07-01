@@ -8,19 +8,28 @@ export default function PedidosUsuario() {
   useEffect(() => {
     const getPedidos = async () => {
       try {
-        // Altere para a rota correta do seu apiService correspondente aos pedidos
-        //const data = await apiService.getPedidos();
-        //setPedidos(data.data);
+        const data = await apiService.getPedidos();
+        console.log("dados da api: ", data.data)
+        setPedidos(data.data);
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error fetching pedidos:', error);
       }
     };
-    //getPedidos();
+    getPedidos();
   }, []);
+
+  // Função auxiliar para traduzir o status numérico da API para texto
+  const getStatusPedido = (statusId) => {
+    switch(statusId) {
+      case 1: return 'Em preparo';
+      case 2: return 'Entregue';
+      default: return 'Cancelado';
+    }
+  };
 
   return (
     <div className="menu-container">
-      {/* Estilos CSS Injetados DIRETAMENTE no JSX (Mesmo Design) */}
+      {/* Estilos CSS Injetados DIRETAMENTE no JSX */}
       <style>{`
         .menu-container {
           min-height: 100vh;
@@ -348,56 +357,72 @@ export default function PedidosUsuario() {
         </div>
 
         <div className="grid-layout">
-          {pedidos.map((pedido) => (
-            <div key={pedido.id} className="restaurant-card">
-              
-              <div className="card-media">
-                <img src={pedido.imagem || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80"} alt={pedido.nomeRestaurante} />
+          {pedidos.map((pedido) => {
+            // Convertendo o status numérico para texto
+            const textoStatus = getStatusPedido(pedido.pedido_status);
+            
+            return (
+              <div key={pedido.pedido_id} className="restaurant-card">
                 
-                {/* Status customizado dinamicamente vindo da API */}
-                <div className={`status-tag ${
-                  pedido.status === 'Em preparo' ? 'status-preparo' : 
-                  pedido.status === 'Entregue' ? 'status-entregue' : 'status-cancelado'
-                }`}>
-                  <div className="status-dot"></div>
-                  {pedido.status}
+                <div className="card-media">
+                  {/* Mantive um fallback para a imagem já que a API de pedidos não retorna uma */}
+                  <img src={"https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80"} alt={`Restaurante ${pedido.restaurante_id}`} />
+                  
+                  <div className={`status-tag ${
+                    textoStatus === 'Em preparo' ? 'status-preparo' : 
+                    textoStatus === 'Entregue' ? 'status-entregue' : 'status-cancelado'
+                  }`}>
+                    <div className="status-dot"></div>
+                    {textoStatus}
+                  </div>
+
+                  {/* Fallback visual para categoria já que a API de pedidos não traz isso */}
+                  <div className="category-tag" style={{ color: '#dc2626' }}>
+                    <span>🍽️</span>
+                    Restaurante #{pedido.restaurante_id}
+                  </div>
                 </div>
 
-                <div className="category-tag" style={{ color: pedido.corTextoCategoria || '#dc2626' }}>
-                  <span>{pedido.iconeCategoria || '🍽️'}</span>
-                  {pedido.categoria}
+                <div className="card-body">
+                  {/* Como a API de pedidos só tem o ID do restaurante, mostramos ele ou um texto genérico */}
+                  <h3>Restaurante #{pedido.restaurante_id}</h3>
+                  <div className="order-number">Pedido #{pedido.pedido_id}</div>
+                  
+                  <div className="info-item">
+                    <span style={{ fontSize: '1rem' }}>📅</span>
+                    {/* Formatando a data da API */}
+                    <span>{new Date(pedido.pedido_criacao_pedido).toLocaleDateString('pt-BR')} às {new Date(pedido.pedido_criacao_pedido).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+
+                  {/* Iterando sobre os itens do pedido (Duplo map) */}
+                  <div className="items-list">
+                    <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Itens do pedido:</strong>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {pedido.itens.map((item) => (
+                        <li key={item.item_pedido_id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                          <span>{item.item_pedido_quantidade}x Prato #{item.prato_id}</span>
+                          <span style={{ fontWeight: 500 }}>R$ {item.item_pedido_preco.toFixed(2).replace('.', ',')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="card-footer-layout">
+                    <span className="dishes-label">
+                      Total: R$ {pedido.pedido_valor_total?.toFixed(2).replace('.', ',')}
+                    </span>
+                    <button className="btn-ver-cardapio btn-ver-cardapio-vermelho">
+                      Acompanhar
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="m9 18 6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
+
               </div>
-
-              <div className="card-body">
-                <h3>{pedido.nomeRestaurante}</h3>
-                <div className="order-number">Pedido #{pedido.id}</div>
-                
-                <div className="info-item">
-                  <span style={{ fontSize: '1rem' }}>📅</span>
-                  <span>{pedido.dataPedido}</span>
-                </div>
-
-                {/* Resumo dos Itens Pedidos */}
-                <div className="items-list">
-                  <strong>Itens:</strong> {pedido.resumoItens}
-                </div>
-
-                <div className="card-footer-layout">
-                  <span className="dishes-label">
-                    Total: R$ {pedido.valorTotal?.toFixed(2)}
-                  </span>
-                  <button className="btn-ver-cardapio btn-ver-cardapio-vermelho">
-                    Acompanhar
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="m9 18 6-6-6-6"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
     </div>

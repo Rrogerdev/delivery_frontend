@@ -1,74 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // IMPORTADO O NAVIGATOR
 import apiService from '../services/api';
 
-const restaurantes = [
-  {
-    id: 1,
-    nome: "La Bella Cucina",
-    categoria: "Italiana",
-    iconeCategoria: "🍝",
-    corTextoCategoria: "#dc2626",
-    status: "Aberto",
-    classeStatus: "status-aberto",
-    endereco: "Rua Augusta, 1200 - Consolação, São Paulo - SP",
-    telefone: "(11) 98765-4321",
-    qtdPratos: 17,
-    textoBotao: "Ver cardápio",
-    classeBotao: "btn-ver-cardapio btn-ver-cardapio-vermelho",
-    imagem: "https://images.unsplash.com/photo-1498579150354-977475b7e2b3?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 2,
-    nome: "Sushi Bar Osaka",
-    categoria: "Japonês",
-    iconeCategoria: "🍣",
-    corTextoCategoria: "#4f46e5",
-    status: "Aberto",
-    classeStatus: "status-aberto",
-    endereco: "Av. Liberdade, 450 - Liberdade, São Paulo - SP",
-    telefone: "(11) 91234-5678",
-    qtdPratos: 1,
-    textoBotao: "Ver cardápio",
-    classeBotao: "btn-ver-cardapio btn-ver-cardapio-indigo",
-    imagem: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 3,
-    nome: "Burger House",
-    categoria: "Hamburgueria",
-    iconeCategoria: "🍔",
-    corTextoCategoria: "#f97316",
-    status: "Fechado",
-    classeStatus: "status-fechado",
-    endereco: "Rua Oscar Freire, 350 - Jardins, São Paulo - SP",
-    telefone: "(11) 99988-7766",
-    qtdPratos: 1,
-    textoBotao: "Indisponível",
-    classeBotao: "btn-ver-cardapio btn-indisponivel",
-    imagem: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
-  }
-];
-
 export default function MenuDigital() {
-
-  const [user, setUser] = useState({nome: "teste"})
-  const [restaurantes, setRestaurantes] = useState([])
-  // pegar os restaurantes nessa variavel e implementar os cards com os dados
+  const [user, setUser] = useState({ nome: "teste" });
+  const [restaurantes, setRestaurantes] = useState([]);
+  const navigate = useNavigate(); // INICIALIZADO O NAVIGATOR
 
   useEffect(() => {
-      const getRestaurantes = async () => {
-        try{
-          const data = await apiService.getRestaurantes();
-          setRestaurantes(data.data)
-          console.log(restaurantes)
-        }
-        catch (error){
-          console.error('Error fetching data:', error);
-        }
+    const getRestaurantes = async () => {
+      try {
+        const response = await apiService.getRestaurantes();
+        setRestaurantes(response.data || response);
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-      getRestaurantes();
+    };
+    
+    getRestaurantes();
   }, []);
-
 
   return (
     <div className="menu-container">
@@ -234,6 +184,7 @@ export default function MenuDigital() {
           position: relative;
           height: 12rem;
           width: 100%;
+          background-color: #e5e7eb;
         }
 
         .card-media img {
@@ -278,6 +229,7 @@ export default function MenuDigital() {
           gap: 0.4rem;
           background-color: white;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          color: #dc2626;
         }
 
         .card-body {
@@ -291,7 +243,14 @@ export default function MenuDigital() {
           font-size: 1.25rem;
           font-weight: 700;
           color: #111827;
-          margin: 0 0 0.75rem 0;
+          margin: 0 0 0.25rem 0;
+        }
+        
+        .card-description {
+          font-size: 0.875rem;
+          color: #6b7280;
+          margin-bottom: 1rem;
+          min-height: 1.25rem;
         }
 
         .info-item {
@@ -335,9 +294,6 @@ export default function MenuDigital() {
         .btn-ver-cardapio-vermelho { background-color: #dc2626; color: white; }
         .btn-ver-cardapio-vermelho:hover { background-color: #b91c1c; }
         
-        .btn-ver-cardapio-indigo { background-color: #6366f1; color: white; }
-        .btn-ver-cardapio-indigo:hover { background-color: #4f46e5; }
-        
         .btn-indisponivel { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
       `}</style>
 
@@ -354,7 +310,6 @@ export default function MenuDigital() {
           MenuDigital
         </div>
         <div className="user-nav">
-          {/* <span>Admin</span> */}
           <div className="user-profile">
             <div className="avatar-circle">JS</div>
             <span>{user.nome}</span>
@@ -383,55 +338,73 @@ export default function MenuDigital() {
       <main className="content-section">
         <div className="content-title-block">
           <h2>Restaurantes disponíveis</h2>
-          <p>3 estabelecimentos</p>
+          <p>{restaurantes.length} {restaurantes.length === 1 ? 'estabelecimento' : 'estabelecimentos'}</p>
         </div>
 
         <div className="grid-layout">
-          {restaurantes.map((restaurante) => (
-            <div key={restaurante.id} className="restaurant-card">
-              
-              <div className="card-media">
-                <img src={restaurante.imagem} alt={restaurante.nome} />
-                <div className={`status-tag ${restaurante.classeStatus}`}>
-                  <div className="status-dot"></div>
-                  {restaurante.status}
-                </div>
-                <div className="category-tag" style={{ color: restaurante.corTextoCategoria }}>
-                  <span>{restaurante.iconeCategoria}</span>
-                  {restaurante.categoria}
-                </div>
-              </div>
+          {restaurantes.map((restaurante) => {
+            const isAberto = restaurante.status === 1;
+            const textoStatus = isAberto ? "Aberto" : "Fechado";
+            const classeStatus = isAberto ? "status-aberto" : "status-fechado";
+            const classeBotao = isAberto ? "btn-ver-cardapio btn-ver-cardapio-vermelho" : "btn-ver-cardapio btn-indisponivel";
+            const textoBotao = isAberto ? "Ver cardápio" : "Indisponível";
+            
+            const imagemFallback = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80";
 
-              <div className="card-body">
-                <h3>{restaurante.nome}</h3>
+            return (
+              <div key={restaurante.id} className="restaurant-card">
                 
-                <div className="info-item">
-                  <span style={{ fontSize: '1rem' }}>📍</span>
-                  <span>{restaurante.endereco}</span>
-                </div>
-                
-                <div className="info-item" style={{ marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '1rem' }}>📞</span>
-                  <span>{restaurante.telefone}</span>
+                <div className="card-media">
+                  <img src={restaurante.imagem || imagemFallback} alt={restaurante.nome} />
+                  <div className={`status-tag ${classeStatus}`}>
+                    <div className="status-dot"></div>
+                    {textoStatus}
+                  </div>
+                  <div className="category-tag">
+                    <span>🍽️</span>
+                    {restaurante.restaurante_categoria}
+                  </div>
                 </div>
 
-                <div className="card-footer-layout">
-                  <span className="dishes-label">
-                    {restaurante.qtdPratos} {restaurante.qtdPratos === 1 ? 'prato' : 'pratos'} no cardápio
-                  </span>
-                  <button className={restaurante.classeBotao}>
-                    {restaurante.textoBotao}
-                    {restaurante.status === "Aberto" && (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="m9 18 6-6-6-6"/>
-                      </svg>
-                    )}
-                  </button>
+                <div className="card-body">
+                  <h3>{restaurante.nome}</h3>
+                  <p className="card-description">
+                    {restaurante.descricao ? restaurante.descricao : ""}
+                  </p>
+                  
+                  <div className="info-item">
+                    <span style={{ fontSize: '1rem' }}>📍</span>
+                    <span>{restaurante.endereco}</span>
+                  </div>
+                  
+                  <div className="info-item" style={{ marginBottom: '1.5rem' }}>
+                    <span style={{ fontSize: '1rem' }}>📞</span>
+                    <span>{restaurante.restaurante_telefone}</span>
+                  </div>
+
+                  <div className="card-footer-layout">
+                    <span className="dishes-label">
+                      Visualizar
+                    </span>
+                    {/* IMPLEMENTADA A FUNÇÃO DE REDIRECIONAMENTO COM O ID */}
+                    <button 
+                      className={classeBotao}
+                      onClick={() => isAberto && navigate(`/cardapio/${restaurante.id}`)}
+                      disabled={!isAberto}
+                    >
+                      {textoBotao}
+                      {isAberto && (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
+
               </div>
-
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
     </div>

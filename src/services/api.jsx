@@ -28,8 +28,15 @@ const apiService = {
 
     getRestaurantes: async () =>{
       return await restauranteApi.get('/restaurantes');
-    }
+    },
 
+    getPedidos: async () =>{
+      return await pedidoApi.get('/pedidos');
+    },
+
+    getCardapioByRestaurante: async (id) =>{
+      return await restauranteApi.get(`/restaurantes/${id}/pratos`)
+    }
 }
 
 
