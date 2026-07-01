@@ -1,439 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import apiService from '../services/api';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate, useNavigate } from "react-router-dom";
+import { listarRestaurantes } from '../services/api';
+import Header from '../components/Header';
 
-const restaurantes = [
-  {
-    id: 1,
-    nome: "La Bella Cucina",
-    categoria: "Italiana",
-    iconeCategoria: "🍝",
-    corTextoCategoria: "#dc2626",
-    status: "Aberto",
-    classeStatus: "status-aberto",
-    endereco: "Rua Augusta, 1200 - Consolação, São Paulo - SP",
-    telefone: "(11) 98765-4321",
-    qtdPratos: 17,
-    textoBotao: "Ver cardápio",
-    classeBotao: "btn-ver-cardapio btn-ver-cardapio-vermelho",
-    imagem: "https://images.unsplash.com/photo-1498579150354-977475b7e2b3?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 2,
-    nome: "Sushi Bar Osaka",
-    categoria: "Japonês",
-    iconeCategoria: "🍣",
-    corTextoCategoria: "#4f46e5",
-    status: "Aberto",
-    classeStatus: "status-aberto",
-    endereco: "Av. Liberdade, 450 - Liberdade, São Paulo - SP",
-    telefone: "(11) 91234-5678",
-    qtdPratos: 1,
-    textoBotao: "Ver cardápio",
-    classeBotao: "btn-ver-cardapio btn-ver-cardapio-indigo",
-    imagem: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 3,
-    nome: "Burger House",
-    categoria: "Hamburgueria",
-    iconeCategoria: "🍔",
-    corTextoCategoria: "#f97316",
-    status: "Fechado",
-    classeStatus: "status-fechado",
-    endereco: "Rua Oscar Freire, 350 - Jardins, São Paulo - SP",
-    telefone: "(11) 99988-7766",
-    qtdPratos: 1,
-    textoBotao: "Indisponível",
-    classeBotao: "btn-ver-cardapio btn-indisponivel",
-    imagem: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80"
-  }
-];
+function Home() {
+  const { isLogged } = useAuth();
+  const navigate = useNavigate();
 
-export default function MenuDigital() {
-
-  const [user, setUser] = useState({nome: "teste"})
-  const [restaurantes, setRestaurantes] = useState([])
-  // pegar os restaurantes nessa variavel e implementar os cards com os dados
+  const [restaurantes, setRestaurantes] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
   useEffect(() => {
-      const getRestaurantes = async () => {
-        try{
-          const data = await apiService.getRestaurantes();
-          setRestaurantes(data.data)
-          console.log(restaurantes)
-        }
-        catch (error){
-          console.error('Error fetching data:', error);
-        }
-      }
-      getRestaurantes();
-  }, []);
+    if (!isLogged) return;
+    listarRestaurantes()
+      .then(setRestaurantes)
+      .catch(() => setErro('Não foi possível carregar os restaurantes.'))
+      .finally(() => setCarregando(false));
+  }, [isLogged]);
 
+  if (!isLogged) return <Navigate to="/login" replace />;
+
+  const s = {
+    wrap: { fontFamily: "'Jost', sans-serif", color: '#1c1a17', background: '#f7f5f1', minHeight: '100vh' },
+    content: { maxWidth: 880, margin: '0 auto', padding: '32px 24px' },
+    title: { fontSize: 24, fontWeight: 500, marginBottom: 4 },
+    sub: { color: '#8a8479', fontSize: 14, marginBottom: 24 },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 },
+    card: {
+      background: '#fff', border: '1px solid #e4e0d8', borderRadius: 6,
+      padding: 20, cursor: 'pointer', transition: 'border-color .15s',
+    },
+    nome: { fontWeight: 500, fontSize: 17, marginBottom: 4 },
+    cat: { color: '#8b6f4e', fontSize: 12, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 },
+    end: { color: '#8a8479', fontSize: 13 },
+    msg: { color: '#8a8479', padding: 24 },
+  };
 
   return (
-    <div className="menu-container">
-      {/* Estilos CSS Injetados DIRETAMENTE no JSX */}
-      <style>{`
-        .menu-container {
-          min-height: 100vh;
-          background-color: #f9fafb;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          color: #1f2937;
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+    <div style={s.wrap}>
+      <Header />
+      <div style={s.content}>
+        <div style={s.title}>Restaurantes</div>
+        <div style={s.sub}>Escolha um restaurante para ver o cardápio</div>
 
-        /* Header */
-        .navbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 1rem 2rem;
-          background-color: #ffffff;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
+        {carregando && <div style={s.msg}>Carregando…</div>}
+        {erro && <div style={{ ...s.msg, color: '#9e3a38' }}>{erro}</div>}
+        {!carregando && !erro && restaurantes.length === 0 && (
+          <div style={s.msg}>Nenhum restaurante disponível no momento.</div>
+        )}
 
-        .logo-box {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          color: #dc2626;
-          font-weight: 700;
-          font-size: 1.25rem;
-        }
-
-        .logo-icon-bg {
-          width: 2rem;
-          height: 2rem;
-          background-color: #dc2626;
-          color: white;
-          border-radius: 0.375rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .user-nav {
-          display: flex;
-          align-items: center;
-          gap: 1.5rem;
-          font-size: 0.875rem;
-          color: #4b5563;
-        }
-
-        .user-profile {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          cursor: pointer;
-        }
-
-        .avatar-circle {
-          width: 2rem;
-          height: 2rem;
-          background-color: #dc2626;
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-        }
-
-        /* Hero */
-        .hero-banner {
-          background: linear-gradient(135deg, #2A1613 0%, #1a0e0c 50%, #3a1d18 100%);
-          color: white;
-          padding: 5rem 2rem;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .hero-body {
-          max-width: 72rem;
-          margin: 0 auto;
-          position: relative;
-          z-index: 2;
-        }
-
-        .hero-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          background-color: #422722;
-          color: #EAB308;
-          font-size: 0.75rem;
-          font-weight: 600;
-          padding: 0.375rem 0.75rem;
-          border-radius: 9999px;
-          margin-bottom: 1.5rem;
-        }
-
-        .hero-title {
-          font-size: 3rem;
-          font-weight: 800;
-          line-height: 1.15;
-          margin: 0 0 1rem 0;
-          letter-spacing: -0.025em;
-          color: white;
-        }
-
-        .hero-title span {
-          color: #ef4444;
-        }
-
-        .hero-text {
-          color: #d1d5db;
-          font-size: 1.125rem;
-          margin: 0;
-        }
-
-        /* Grid & Main Content */
-        .content-section {
-          max-width: 72rem;
-          margin: 0 auto;
-          padding: 3rem 2rem;
-        }
-
-        .content-title-block {
-          margin-bottom: 2rem;
-        }
-
-        .content-title-block h2 {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #111827;
-          margin: 0;
-        }
-
-        .content-title-block p {
-          color: #6b7280;
-          font-size: 0.875rem;
-          margin: 0.25rem 0 0 0;
-        }
-
-        .grid-layout {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 1.5rem;
-        }
-
-        /* Cards */
-        .restaurant-card {
-          background-color: white;
-          border-radius: 1rem;
-          overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-          border: 1px solid #f3f4f6;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .card-media {
-          position: relative;
-          height: 12rem;
-          width: 100%;
-        }
-
-        .card-media img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .status-tag {
-          position: absolute;
-          top: 1rem;
-          right: 1rem;
-          padding: 0.25rem 0.6rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-        }
-
-        .status-aberto { background-color: #22c55e; color: white; }
-        .status-fechado { background-color: #f87171; color: white; }
-        
-        .status-dot {
-          width: 6px;
-          height: 6px;
-          background-color: white;
-          border-radius: 50%;
-        }
-
-        .category-tag {
-          position: absolute;
-          bottom: 1rem;
-          left: 1rem;
-          padding: 0.35rem 0.75rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          background-color: white;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-body {
-          padding: 1.25rem;
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-
-        .card-body h3 {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #111827;
-          margin: 0 0 0.75rem 0;
-        }
-
-        .info-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 0.5rem;
-          font-size: 0.875rem;
-          color: #6b7280;
-          margin-bottom: 0.5rem;
-          line-height: 1.4;
-        }
-
-        .card-footer-layout {
-          margin-top: auto;
-          padding-top: 1rem;
-          border-top: 1px solid #f3f4f6;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .dishes-label {
-          font-size: 0.875rem;
-          color: #9ca3af;
-          font-weight: 500;
-        }
-
-        .btn-ver-cardapio {
-          padding: 0.5rem 1rem;
-          border-radius: 9999px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-        }
-
-        .btn-ver-cardapio-vermelho { background-color: #dc2626; color: white; }
-        .btn-ver-cardapio-vermelho:hover { background-color: #b91c1c; }
-        
-        .btn-ver-cardapio-indigo { background-color: #6366f1; color: white; }
-        .btn-ver-cardapio-indigo:hover { background-color: #4f46e5; }
-        
-        .btn-indisponivel { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
-      `}</style>
-
-      {/* Navbar */}
-      <header className="navbar">
-        <div className="logo-box">
-          <div className="logo-icon-bg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path>
-              <path d="M7 2v20"></path>
-              <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path>
-            </svg>
-          </div>
-          MenuDigital
-        </div>
-        <div className="user-nav">
-          {/* <span>Admin</span> */}
-          <div className="user-profile">
-            <div className="avatar-circle">JS</div>
-            <span>{user.nome}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="m6 9 6 6 6-6"/>
-            </svg>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Banner */}
-      <section className="hero-banner">
-        <div className="hero-body">
-          <div className="hero-badge">
-            <span>👾</span> Cardápio Digital
-          </div>
-          <h1 className="hero-title">
-            Escolha seu <br />
-            <span>restaurante</span> favorito
-          </h1>
-          <p className="hero-text">Navegue pelo cardápio completo de cada restaurante e descubra pratos incríveis.</p>
-        </div>
-      </section>
-
-      {/* Listagem */}
-      <main className="content-section">
-        <div className="content-title-block">
-          <h2>Restaurantes disponíveis</h2>
-          <p>3 estabelecimentos</p>
-        </div>
-
-        <div className="grid-layout">
-          {restaurantes.map((restaurante) => (
-            <div key={restaurante.id} className="restaurant-card">
-              
-              <div className="card-media">
-                <img src={restaurante.imagem} alt={restaurante.nome} />
-                <div className={`status-tag ${restaurante.classeStatus}`}>
-                  <div className="status-dot"></div>
-                  {restaurante.status}
-                </div>
-                <div className="category-tag" style={{ color: restaurante.corTextoCategoria }}>
-                  <span>{restaurante.iconeCategoria}</span>
-                  {restaurante.categoria}
-                </div>
-              </div>
-
-              <div className="card-body">
-                <h3>{restaurante.nome}</h3>
-                
-                <div className="info-item">
-                  <span style={{ fontSize: '1rem' }}>📍</span>
-                  <span>{restaurante.endereco}</span>
-                </div>
-                
-                <div className="info-item" style={{ marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '1rem' }}>📞</span>
-                  <span>{restaurante.telefone}</span>
-                </div>
-
-                <div className="card-footer-layout">
-                  <span className="dishes-label">
-                    {restaurante.qtdPratos} {restaurante.qtdPratos === 1 ? 'prato' : 'pratos'} no cardápio
-                  </span>
-                  <button className={restaurante.classeBotao}>
-                    {restaurante.textoBotao}
-                    {restaurante.status === "Aberto" && (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="m9 18 6-6-6-6"/>
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-
+        <div style={s.grid}>
+          {restaurantes.map((r) => (
+            <div
+              key={r.id}
+              style={s.card}
+              onClick={() => navigate(`/restaurante/${r.id}`)}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#8b6f4e')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#e4e0d8')}
+            >
+              <div style={s.nome}>{r.nome}</div>
+              {r.restaurante_categoria && <div style={s.cat}>{r.restaurante_categoria}</div>}
+              {r.endereco && <div style={s.end}>{r.endereco}</div>}
             </div>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
+
+export default Home;
