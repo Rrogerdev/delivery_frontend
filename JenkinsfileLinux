@@ -34,7 +34,7 @@ pipeline {
                 // O '|| true' garante que se o container não existir, o Linux não quebra o pipeline
                 sh "docker rm -f ${APP_NAME} || true"
 
-                sh "docker run -d --name ${APP_NAME} -p 9536:9536 ${IMAGE_TAG}"
+                sh "docker run -d --name ${APP_NAME} -p 9526:9526 ${IMAGE_TAG}"
             }
         }
 
