@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import Pagamentos from './pages/Pagamentos';
 import Pedidos from './pages/Pedidos';
 import Cardapio from './pages/Cardapio';
+import Pagar from './pages/Pagar';
 function App() {
   return (
     <AuthProvider>
@@ -16,6 +17,8 @@ function App() {
         <Route path="/pagamentos" element={<Pagamentos />} />
         <Route path="/pedidos" element={<Pedidos />} />
         <Route path="/cardapio/:id" element={<Cardapio />} />
+        <Route path="/cardapio/:id" element={<Cardapio />} />
+        <Route path="/pagar" element={<Pagar />} />
       </Routes>
     </AuthProvider>
   );

@@ -3,30 +3,30 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
 
 export default function Cardapio() {
-  const { id } = useParams(); // Captura o ID do restaurante da URL (ex: /cardapio/1)
+  const { id } = useParams();
   const navigate = useNavigate();
   const [pratos, setPratos] = useState([]);
   const [restauranteInfo, setRestauranteInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [adicionando, setAdicionando] = useState(false);
+  const [user, setUser] = useState({})
 
   useEffect(() => {
     const getCardapioDados = async () => {
       try {
+
+        setUser(userData)
         setLoading(true);
-        // Faz a chamada real para a sua API passando o ID do restaurante por parâmetro
         const response = await apiService.getCardapioByRestaurante(id);
         
-        // Garante a extração dos dados mesmo se vierem dentro de .data ou diretamente no array
         const dadosCardapio = response.data || response;
-        console.log("Dados do cardápio recebidos da API: ", dadosCardapio);
+        console.log("Dados do cardápio recebidos da API aa: ", dadosCardapio);
         
         setPratos(dadosCardapio);
 
-        // Como o nó 'restaurante' veio na estrutura anterior, buscamos as informações dele do primeiro prato encontrado
         if (dadosCardapio && dadosCardapio.length > 0 && dadosCardapio[0].restaurante) {
           setRestauranteInfo(dadosCardapio[0].restaurante);
         } else {
-          // Fallback caso a rota retorne apenas os pratos sem o objeto restaurante aninhado
           setRestauranteInfo({
             nome: "Cardápio do Estabelecimento",
             restaurante_categoria: "Geral",
@@ -40,13 +40,45 @@ export default function Cardapio() {
         setLoading(false);
       }
     };
-
+        const userData = JSON.parse(localStorage.getItem("delivery_user"))
     if (id) {
       getCardapioDados();
     }
   }, [id]);
 
-  // Agrupa os itens do cardápio por categoria automaticamente
+  const handleAdicionarPedido = async (prato) => {
+    try {
+      setAdicionando(true);
+      
+      const usuario_id = user.user_id;
+
+      const payload = {
+        usuario_id: usuario_id,
+        restaurante_id: parseInt(id),
+        pedido_status: 1,
+        pedido_valor_total: parseFloat(prato.preco || prato.prato_preco),
+        pedido_criacao_pedido: new Date().toISOString(), // SOLUÇÃO DO FRONTEND: Envia a data para evitar o erro do backend
+        itens: [
+          {
+            prato_id: prato.id || prato.prato_id,
+            item_pedido_quantidade: 1,
+            item_pedido_preco: parseFloat(prato.preco || prato.prato_preco)
+          }
+        ]
+      };
+
+      const response = await apiService.criarPedido(payload);
+      console.log("Pedido registrado com sucesso:", response.data);
+      alert(`1x ${prato.nome} adicionado ao pedido!`);
+      
+    } catch (error) {
+      console.error("Erro ao adicionar prato ao pedido:", error);
+      alert("Falha ao processar o pedido. Tente novamente.");
+    } finally {
+      setAdicionando(false);
+    }
+  };
+
   const pratosAgrupados = pratos.reduce((acc, prato) => {
     const categoriaNome = prato.categoria?.nome || "Outros";
     if (!acc[categoriaNome]) acc[categoriaNome] = [];
@@ -74,9 +106,13 @@ export default function Cardapio() {
         .dish-card.indisponivel { opacity: 0.5; }
         .dish-info h4 { font-size: 1.125rem; font-weight: 700; margin: 0 0 0.5rem 0; }
         .dish-info p { font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem 0; }
-        .dish-footer { display: flex; align-items: center; justify-content: space-between; }
+        .dish-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; }
         .dish-price { font-size: 1.25rem; font-weight: 700; color: #22c55e; }
         .badge-indisponivel { background-color: #ef4444; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 0.375rem; }
+        
+        .btn-adicionar { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-adicionar:hover:not(:disabled) { background-color: #dc2626; }
+        .btn-adicionar:disabled { background-color: #fca5a5; cursor: not-allowed; }
       `}</style>
 
       <button className="btn-voltar" onClick={() => navigate(-1)}>
@@ -107,20 +143,30 @@ export default function Cardapio() {
               <div className="menu-grid">
                 {pratosAgrupados[categoriaNome].map((prato) => {
                   const disponivel = prato.disponibilidade === 1;
-                  const precoFormatado = Number(prato.preco).toLocaleString('pt-BR', { 
+                  const precoFormatado = Number(prato.preco || prato.prato_preco).toLocaleString('pt-BR', { 
                     style: 'currency', 
                     currency: 'BRL' 
                   });
 
                   return (
-                    <div key={prato.id} className={`dish-card ${!disponivel ? 'indisponivel' : ''}`}>
+                    <div key={prato.id || prato.prato_id} className={`dish-card ${!disponivel ? 'indisponivel' : ''}`}>
                       <div className="dish-info">
                         <h4>{prato.nome}</h4>
                         <p>{prato.descricao || "Sem descrição disponível."}</p>
                       </div>
                       <div className="dish-footer">
                         <span className="dish-price">{precoFormatado}</span>
-                        {!disponivel && <span className="badge-indisponivel">Esgotado</span>}
+                        {disponivel ? (
+                          <button 
+                            className="btn-adicionar" 
+                            onClick={() => handleAdicionarPedido(prato)}
+                            disabled={adicionando}
+                          >
+                            {adicionando ? 'Adicionando...' : 'Adicionar'}
+                          </button>
+                        ) : (
+                          <span className="badge-indisponivel">Esgotado</span>
+                        )}
                       </div>
                     </div>
                   );

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'; // IMPORTADO O NAVIGATOR
 import apiService from '../services/api';
 
 export default function MenuDigital() {
-  const [user, setUser] = useState({ nome: "teste" });
+  const [user, setUser] = useState({});
   const [restaurantes, setRestaurantes] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // ESTADO PARA CONTROLAR O MENU DO PERFIL
   const navigate = useNavigate(); // INICIALIZADO O NAVIGATOR
@@ -19,6 +19,8 @@ export default function MenuDigital() {
     };
     
     getRestaurantes();
+    const userData = JSON.parse(localStorage.getItem("delivery_user"))
+    setUser(userData)
   }, []);
 
   return (
@@ -359,7 +361,7 @@ export default function MenuDigital() {
           {/* Adicionado onClick para abrir/fechar o menu */}
           <div className="user-profile" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <div className="avatar-circle">JS</div>
-            <span>{user.nome}</span>
+            <span>{user.user_name}</span>
             {/* O ícone rotaciona levemente dependendo do estado do menu */}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 

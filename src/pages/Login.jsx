@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-
+import apiService from '../services/api';
+import { useNavigate } from 'react-router-dom';
 // ── Configuração da URL Base ────────────────────────────────────────
 const BASE_URL = typeof window !== 'undefined'
   ? window.location.origin + window.location.pathname.replace(/\/(login|cadastro)\/?$/, '').replace(/\/$/, '')
@@ -381,7 +382,7 @@ export default function DeliveryAuth() {
     }
     return 'login';
   });
-
+  const navigate = useNavigate();
   // ── Estados do Formulário de Login ──────────────────────────────
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -424,34 +425,29 @@ export default function DeliveryAuth() {
     setLoginAlert({ message: '', type: '' });
 
     try {
-      const res = await fetch(`${BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_email: email, user_password: password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        return setLoginAlert({ 
-          message: data.error || data.message || 'Credenciais inválidas.', 
-          type: 'error' 
-        });
-      }
+      // const res = await fetch(`${BASE_URL}/auth/login`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ user_email: email, user_password: password }),
+      // });
+      const res = await apiService.logarUsuario({ user_email: email, user_password: password})
+      const data = res.data
 
       const userToken = data.token;
       const userData = data.user ?? data;
-
+      console.log(typeof(userData))
       setToken(userToken);
       setUser(userData);
       localStorage.setItem('delivery_token', userToken);
       localStorage.setItem('delivery_user', JSON.stringify(userData));
+      navigate('/')
 
     } catch (err) {
       setLoginAlert({ 
         message: 'Não foi possível conectar à API. Verifique se o servidor está rodando.', 
         type: 'error' 
       });
+      console.log(err)
     }
   };
 
@@ -514,13 +510,10 @@ export default function DeliveryAuth() {
     setRegisterAlert({ message: '', type: '' });
 
     try {
-      const res = await fetch(BASE_URL + endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      console.log(body)
+      const data = await apiService.criarUsuario(body)
+      console.log(data)
 
-      const data = await res.json();
 
       if (!res.ok) {
         return setRegisterAlert({ 
@@ -671,13 +664,13 @@ export default function DeliveryAuth() {
                   <div className="form-subtitle">Preencha os dados para se registrar</div>
                 </div>
 
-                <div className="field">
+                {/* <div className="field">
                   <label>Tipo de conta</label>
                   <select value={regRole} onChange={(e) => setRegRole(e.target.value)}>
                     <option value="CLIENTE">Cliente</option>
                     <option value="ENTREGADOR">Entregador</option>
                   </select>
-                </div>
+                </div> */}
 
                 <div className="field">
                   <label>Nome completo</label>
@@ -839,20 +832,9 @@ export default function DeliveryAuth() {
                     <div className="info-label">Telefone</div>
                     <div className="info-value">{user.user_telefone || '—'}</div>
                   </div>
-                  <div className="info-item">
-                    <div className="info-label">Tipo</div>
-                    <div className="info-value">{roleMap[roleKey] || user.user_role || '—'}</div>
-                  </div>
-                  <div className="info-item">
-                    <div className="info-label">ID</div>
-                    <div className="info-value" style={{ fontSize: '12px', fontFamily: 'monospace' }}>{user.user_id || '—'}</div>
-                  </div>
                 </div>
 
-                <div className="token-box">
-                  <div className="token-label">Token JWT (session)</div>
-                  <div className="token-value">{token ? token.slice(0, 80) + '…' : '—'}</div>
-                </div>
+
               </div>
             </div>
           )}
