@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import apiService from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from "react-router-dom";
+
 // ── Configuração da URL Base ────────────────────────────────────────
 const BASE_URL = typeof window !== 'undefined'
   ? window.location.origin + window.location.pathname.replace(/\/(login|cadastro)\/?$/, '').replace(/\/$/, '')
@@ -383,6 +386,7 @@ export default function DeliveryAuth() {
     return 'login';
   });
   const navigate = useNavigate();
+  const { setIsLogged } = useAuth()
   // ── Estados do Formulário de Login ──────────────────────────────
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -435,6 +439,8 @@ export default function DeliveryAuth() {
 
       const userToken = data.token;
       const userData = data.user ?? data;
+
+      setIsLogged(true)
       console.log(typeof(userData))
       setToken(userToken);
       setUser(userData);

@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from "react-router-dom";
+
+
 
 export default function PedidosUsuario() {
   const [user, setUser] = useState({ nome: "teste" });
   const [pedidos, setPedidos] = useState([]);
   const navigate = useNavigate();
+
+
+
+  const { isLogged } = useAuth();
+
+  if (!isLogged) {
+     return <Navigate to="/login" replace />;
+  //    return <h1>Não está logado</h1>
+    }
+
 
   useEffect(() => {
     const getPedidos = async () => {

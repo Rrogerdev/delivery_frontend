@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from "react-router-dom";
+
+
 
 export default function Cardapio() {
   const { id } = useParams();
@@ -10,6 +14,16 @@ export default function Cardapio() {
   const [loading, setLoading] = useState(true);
   const [adicionando, setAdicionando] = useState(false);
   const [user, setUser] = useState({})
+
+
+  const { isLogged } = useAuth();
+
+  if (!isLogged) {
+     return <Navigate to="/login" replace />;
+  //    return <h1>Não está logado</h1>
+    }
+
+
 
   useEffect(() => {
     const getCardapioDados = async () => {

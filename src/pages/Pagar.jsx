@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import apiService from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from "react-router-dom";
+
+
+
 
 export default function Pagar() {
   const location = useLocation();
@@ -12,6 +17,14 @@ export default function Pagar() {
 
   const { valorTotal, itens, pedidoId } = location.state || {};
   const valorFinal = Math.max(0, valorTotal - desconto);
+
+
+  const { isLogged } = useAuth();
+
+  if (!isLogged) {
+     return <Navigate to="/login" replace />;
+  //    return <h1>Não está logado</h1>
+    }
 
   const handleAplicarCupom = async () => {
     if (!cupom) return;
@@ -30,6 +43,7 @@ export default function Pagar() {
     try {
       const body = { "pedido_id": pedidoId, "pagamentos_valor": valorFinal };
       await apiService.realizarPagamento(body);
+      await apiService.atualizarPedido(pedidoId)
       alert("Pagamento concluído com sucesso!");
       navigate('/');
     } catch (error) {
@@ -117,7 +131,7 @@ export default function Pagar() {
           {desconto > 0 && (
             <li className="summary-item" style={{ color: '#22c55e', fontWeight: 'bold' }}>
               <span>Desconto</span>
-              <span>- R$ {desconto.toFixed(2).replace('.', ',')}</span>
+              <span>- R$ {desconto.replace('.', ',')}</span>
             </li>
           )}
         </ul>

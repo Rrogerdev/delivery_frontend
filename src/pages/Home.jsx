@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // IMPORTADO O NAVIGATOR
 import apiService from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { Navigate } from "react-router-dom";
+
+
 
 export default function MenuDigital() {
   const [user, setUser] = useState({});
   const [restaurantes, setRestaurantes] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // ESTADO PARA CONTROLAR O MENU DO PERFIL
   const navigate = useNavigate(); // INICIALIZADO O NAVIGATOR
+  const {isLogged} = useAuth()
+
+
+
+  if (!isLogged) {
+    return <Navigate to="/login" replace />;
+ //    return <h1>Não está logado</h1>
+   }
 
   useEffect(() => {
     const getRestaurantes = async () => {

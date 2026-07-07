@@ -11,12 +11,29 @@ const servicos = {
 const baseURL = "http://academico3.rj.senac.br/20261prj5/delivery"
 
 const createService = (serv) => {
-  return axios.create({
+  const api = axios.create({
     baseURL: `${baseURL}/${serv}`,
     timeout: 15000,
-    headers: { "Content-Type": "application/json" }
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
-}
+
+  // Adiciona o token automaticamente, caso exista
+  api.interceptors.request.use((config) => {
+    
+    const token = localStorage.getItem("delivery_token");
+
+    if (token) {
+      console.log(token)
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  });
+
+  return api;
+};
 
 export const restauranteApi = createService("restaurante");
 export const pedidoApi = createService("pedido");
@@ -68,6 +85,10 @@ const apiService = {
 
   buscarCupom: async (cupomCodigo) =>{
     return await pagamentoApi.get(`/cupons/codigo/${cupomCodigo}`,)
+  },
+
+  atualizarPedido: async (idPedido) =>{
+    return await pedidoApi.delete(`/pedidos/${idPedido}`)
   }
 }
 
